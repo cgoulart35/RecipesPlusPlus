@@ -1,0 +1,5 @@
+*.log
+
+RecipesPlusPlusApi/endpoints/__pycache__/ingredients.cpython-39.pyc
+RecipesPlusPlusApi/endpoints/__pycache__/recipes.cpython-39.pyc
+RecipesPlusPlusApi/endpoints/__pycache__/users.cpython-39.pyc

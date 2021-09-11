@@ -1,9 +1,15 @@
 #region IMPORTS
-from configparser import ConfigParser
 import json
 import pyrebase
 import logging
 import pathlib
+from configparser import ConfigParser
+from flask import Flask
+from flask_restful import Api
+
+from endpoints.ingredients import Ingredients
+from endpoints.recipes import Recipes
+from endpoints.users import Users
 #endregion
 
 # get parent directory
@@ -26,4 +32,10 @@ token = user['idToken']
 LOG_FORMAT = "%(levelname)s %(asctime)s - %(message)s"
 logging.basicConfig(filename = parentDir + '/RecipesPlusPlusApi.log', level = logging.INFO, format = LOG_FORMAT)
 
-# start flask API
+# Flask REST API
+app = Flask(__name__)
+api = Api(app)
+api.add_resource(Ingredients, '/RecipesPlusPlus/ingredients/', '/RecipesPlusPlus/ingredients/<int:id>/')
+api.add_resource(Recipes, '/RecipesPlusPlus/recipes/', '/RecipesPlusPlus/recipes/<int:id>/')
+api.add_resource(Users, '/RecipesPlusPlus/users/', '/RecipesPlusPlus/users/<int:id>/')
+app.run(host='0.0.0.0', port=5000)
