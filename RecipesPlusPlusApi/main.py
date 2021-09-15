@@ -5,7 +5,7 @@ import logging
 import importlib.util
 import pathlib
 from configparser import ConfigParser
-from flask import Flask, request
+from flask import Flask, abort, request
 from flask_restful import Api, Resource
 #endregion
 
@@ -44,39 +44,67 @@ api = Api(app)
 
 class Ingredients(Resource):
     def get(self, id=None):
-        if not id:
+        if id == None:
             # get all ingredients
             return 1
         else:
             # get specific ingredient
-            return id
+            try:
+                list = queries.getIngredient(db, token, id)
+                for ingredient in list:
+                    if ingredient != None and ingredient["id"] == id:
+                        return ingredient
+                raise Exception()
+            except:
+                abort(400, f"No ingredient exists with an id of: {id}")
+
     def post(self):
+        value = request.get_data()
+        value = json.loads(value)
         return
     def delete(self, id):
         return
 
 class Recipes(Resource):
     def get(self, id=None):
-        if not id:
+        if id == None:
             # get all recipes
             return 1
         else:
             # get specific recipe
-            return id
+            try:
+                list = queries.getRecipe(db, token, id)
+                for recipe in list:
+                    if recipe != None and recipe["id"] == id:
+                        return recipe
+                raise Exception()
+            except:
+                abort(400, f"No recipe exists with an id of: {id}")
     def post(self):
+        value = request.get_data()
+        value = json.loads(value)
         return
     def delete(self, id):
         return
 
 class Users(Resource):
     def get(self, id=None):
-        if not id:
+        if id == None:
             # get all users
             return 1
         else:
             # get specific user
-            return id
+            try:
+                list = queries.getUser(db, token, id)
+                for user in list:
+                    if user != None and user["id"] == id:
+                        return user
+                raise Exception()
+            except:
+                abort(400, f"No user exists with an id of: {id}")
     def post(self):
+        value = request.get_data()
+        value = json.loads(value)
         return
     def delete(self, id):
         return
