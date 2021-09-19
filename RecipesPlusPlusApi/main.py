@@ -4,6 +4,7 @@ import pyrebase
 import logging
 import importlib.util
 import pathlib
+import threading
 from configparser import ConfigParser
 from flask import Flask, abort, request
 from flask_restful import Api, Resource
@@ -41,9 +42,11 @@ logging.basicConfig(filename = parentDir + '/RecipesPlusPlusApi.log', level = lo
 # Flask REST API
 app = Flask(__name__)
 api = Api(app)
+apiQueryLock = threading.Lock()
 
 class Ingredients(Resource):
     def get(self, id=None):
+        apiQueryLock.acquire()
         try:
             if id == None:
                 # get all ingredients
@@ -53,16 +56,29 @@ class Ingredients(Resource):
                 return queries.getIngredient(db, token, id)               
         except:
             abort(400, f"No ingredient exists.")
+        finally:
+            apiQueryLock.release()
+
+    def delete(self, id):
+        apiQueryLock.acquire()
+        try: 
+            queries.removeIngredient(db, token, id)
+            return True
+        except:
+            abort(400, f"No ingredient deleted.")
+        finally:
+            apiQueryLock.release()
 
     def post(self):
+        apiQueryLock.acquire()
         value = request.get_data()
         value = json.loads(value)
-        return
-    def delete(self, id):
+        apiQueryLock.release()
         return
 
 class Recipes(Resource):
     def get(self, id=None):
+        apiQueryLock.acquire()
         try:
             if id == None:
                 # get all recipes
@@ -72,29 +88,56 @@ class Recipes(Resource):
                 return queries.getRecipe(db, token, id) 
         except:
             abort(400, f"No recipe exists.")
+        finally:
+            apiQueryLock.release()
+    
+    def delete(self, id):
+        apiQueryLock.acquire()
+        try:
+            queries.removeRecipe(db, token, id)
+            return True
+        except:
+            abort(400, f"No recipe deleted.")
+        finally:
+            apiQueryLock.release()
+    
     def post(self):
+        apiQueryLock.acquire()
         value = request.get_data()
         value = json.loads(value)
-        return
-    def delete(self, id):
+        apiQueryLock.release()
         return
 
 class Users(Resource):
     def get(self, id=None):
+        apiQueryLock.acquire()
         try:
             if id == None:
                 # get all users
                 return queries.getAllUsers(db, token)
             else:
                 # get specific user
-                return queries.getUser(db, token, id)              
+                return queries.getUser(db, token, id)            
         except:
             abort(400, f"No user exists.")
+        finally:
+            apiQueryLock.release()
+    
+    def delete(self, id):
+        apiQueryLock.acquire()
+        try:
+            queries.removeUser(db, token, id)
+            return True
+        except:
+            abort(400, f"No user deleted.")
+        finally:
+            apiQueryLock.release()
+    
     def post(self):
+        apiQueryLock.acquire()
         value = request.get_data()
         value = json.loads(value)
-        return
-    def delete(self, id):
+        apiQueryLock.release()
         return
 
 api.add_resource(Ingredients, '/RecipesPlusPlus/ingredients/', '/RecipesPlusPlus/ingredients/<int:id>/')
