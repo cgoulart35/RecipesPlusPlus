@@ -3,7 +3,9 @@ def getAllIngredients(db, token):
     result = db.child("ingredients").get(token)
     if result.val() == None:
         raise Exception
-    ingredients = sorted(result.val(), key=lambda ingredient: ingredient["id"])
+    ingredients = result.val()
+    if len(ingredients) > 1:
+        ingredients = sorted(ingredients.values(), key=lambda ingredient: ingredient["id"])
     return ingredients
 
 def getNextIngredientId(db, token):
@@ -49,7 +51,9 @@ def getAllRecipes(db, token):
     result = db.child("recipes").get(token)
     if result.val() == None:
         raise Exception
-    recipes = sorted(result.val(), key=lambda recipe: recipe["id"])
+    recipes = result.val()
+    if len(recipes) > 1:
+        recipes = sorted(recipes.values(), key=lambda recipe: recipe["id"])
     return recipes
 
 def getNextRecipeId(db, token):
@@ -84,6 +88,13 @@ def removeRecipe(db, token, recipeId):
         return
 
 def addRecipe(db, token, calories, image_url, ingredients, instructions, name, time):
+    # validate given ingredients exist
+    existingIngredients = getAllIngredients(db, token)
+    existingIngredientIds = [ingredient["id"] for ingredient in existingIngredients]
+    for ingredientId in ingredients:
+        if ingredientId not in existingIngredientIds:
+            raise Exception
+    
     id = getNextRecipeId(db, token)
     recipe = {"calories": calories, "id": id, "image_url": image_url, "ingredients": ingredients, "instructions": instructions, "name": name, "time": time}
     db.child("recipes").push(recipe)
@@ -95,7 +106,9 @@ def getAllUsers(db, token):
     result = db.child("users").get(token)
     if result.val() == None:
         raise Exception
-    users = sorted(result.val(), key=lambda user: user["id"])
+    users = result.val()
+    if len(users) > 1:
+        users = sorted(users.values(), key=lambda user: user["id"])
     return users
 
 def getNextUserId(db, token):
@@ -130,6 +143,13 @@ def removeUser(db, token, userId):
         return
 
 def addUser(db, token, email, name, recipes):
+    # validate given recipes exist
+    existingRecipes = getAllRecipes(db, token)
+    existingRecipeIds = [recipe["id"] for recipe in existingRecipes]
+    for recipeId in recipes:
+        if recipeId not in existingRecipeIds:
+            raise Exception
+
     id = getNextUserId(db, token)
     user = {"email": email, "id": id, "name": name, "recipes": recipes}
     db.child("users").push(user)

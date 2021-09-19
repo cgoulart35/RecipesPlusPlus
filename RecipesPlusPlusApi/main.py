@@ -89,11 +89,10 @@ class Ingredients(Resource):
         try:
             if isInvalid:
                 raise Exception
-            queries.addIngredient(db, token, value["name"], value["image_url"])
             errorMsg = "No ingredient added."
+            queries.addIngredient(db, token, value["name"], value["image_url"])
             return True
-        except Exception as e:
-            print(e)
+        except:
             abort(400, errorMsg)
         finally:
             apiQueryLock.release()
@@ -155,11 +154,10 @@ class Recipes(Resource):
         try:
             if isInvalid:
                 raise Exception
-            queries.addRecipe(db, token, value["calories"], value["image_url"], value["ingredients"], value["instructions"], value["name"], value["time"])
             errorMsg = "No recipe added."
+            queries.addRecipe(db, token, value["calories"], value["image_url"], value["ingredients"], value["instructions"], value["name"], value["time"])
             return True
-        except Exception as e:
-            print(e)
+        except:
             abort(400, errorMsg)
         finally:
             apiQueryLock.release()
@@ -212,11 +210,10 @@ class Users(Resource):
         try:
             if isInvalid:
                 raise Exception
-            queries.addUser(db, token, value["email"], value["name"], value["recipes"])
             errorMsg = "No user added."
+            queries.addUser(db, token, value["email"], value["name"], value["recipes"])
             return True
-        except Exception as e:
-            print(e)
+        except:
             abort(400, errorMsg)
         finally:
             apiQueryLock.release()
