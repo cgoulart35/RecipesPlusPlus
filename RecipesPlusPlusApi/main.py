@@ -55,7 +55,7 @@ class Ingredients(Resource):
                 # get specific ingredient
                 return queries.getIngredient(db, token, id)               
         except:
-            abort(400, f"No ingredient exists.")
+            abort(400, "No ingredient exists.")
         finally:
             apiQueryLock.release()
 
@@ -65,7 +65,7 @@ class Ingredients(Resource):
             queries.removeIngredient(db, token, id)
             return True
         except:
-            abort(400, f"No ingredient deleted.")
+            abort(400, "No ingredient deleted.")
         finally:
             apiQueryLock.release()
 
@@ -73,8 +73,30 @@ class Ingredients(Resource):
         apiQueryLock.acquire()
         value = request.get_data()
         value = json.loads(value)
-        apiQueryLock.release()
-        return
+
+        # validate there is a field for name (str) (optional: image_url (str))
+        isInvalid = False
+        errorMsg = "Please fix the following values: "
+
+        if value["name"] == None or value["name"] == "" or type(value["name"]) != str:
+            isInvalid = True
+            errorMsg += "name (str) "
+        if type(value["image_url"]) != str:
+            isInvalid = True
+            errorMsg += "image_url (str) "
+        errorMsg += "(optional: image_url (str))"
+
+        try:
+            if isInvalid:
+                raise Exception
+            queries.addIngredient(db, token, value["name"], value["image_url"])
+            errorMsg = "No ingredient added."
+            return True
+        except Exception as e:
+            print(e)
+            abort(400, errorMsg)
+        finally:
+            apiQueryLock.release()
 
 class Recipes(Resource):
     def get(self, id=None):
@@ -87,7 +109,7 @@ class Recipes(Resource):
                 # get specific recipe
                 return queries.getRecipe(db, token, id) 
         except:
-            abort(400, f"No recipe exists.")
+            abort(400, "No recipe exists.")
         finally:
             apiQueryLock.release()
     
@@ -97,7 +119,7 @@ class Recipes(Resource):
             queries.removeRecipe(db, token, id)
             return True
         except:
-            abort(400, f"No recipe deleted.")
+            abort(400, "No recipe deleted.")
         finally:
             apiQueryLock.release()
     
@@ -105,8 +127,42 @@ class Recipes(Resource):
         apiQueryLock.acquire()
         value = request.get_data()
         value = json.loads(value)
-        apiQueryLock.release()
-        return
+
+        # validate there are fields for ingredients (list), instructions (list), name (str) (optional: calories (int) image_url (str) time (int))
+        isInvalid = False
+        errorMsg = "Please fix the following values: "
+
+        if value["ingredients"] == None or not value["ingredients"] or type(value["ingredients"]) != list:
+            isInvalid = True
+            errorMsg += "ingredients (list) "
+        if value["instructions"] == None or not value["instructions"] or type(value["instructions"]) != list:
+            isInvalid = True
+            errorMsg += "instructions (list) "
+        if value["name"] == None or value["name"] == "" or type(value["name"]) != str:
+            isInvalid = True
+            errorMsg += "name (str) "
+        if type(value["calories"]) != int:
+            isInvalid = True
+            errorMsg += "calories (int) "
+        if type(value["image_url"]) != str:
+            isInvalid = True
+            errorMsg += "image_url (str) "
+        if type(value["time"]) != int:
+            isInvalid = True
+            errorMsg += "time (int) "
+        errorMsg += "(optional: calories (int) image_url (str) time (int))"
+
+        try:
+            if isInvalid:
+                raise Exception
+            queries.addRecipe(db, token, value["calories"], value["image_url"], value["ingredients"], value["instructions"], value["name"], value["time"])
+            errorMsg = "No recipe added."
+            return True
+        except Exception as e:
+            print(e)
+            abort(400, errorMsg)
+        finally:
+            apiQueryLock.release()
 
 class Users(Resource):
     def get(self, id=None):
@@ -119,7 +175,7 @@ class Users(Resource):
                 # get specific user
                 return queries.getUser(db, token, id)            
         except:
-            abort(400, f"No user exists.")
+            abort(400, "No user exists.")
         finally:
             apiQueryLock.release()
     
@@ -129,7 +185,7 @@ class Users(Resource):
             queries.removeUser(db, token, id)
             return True
         except:
-            abort(400, f"No user deleted.")
+            abort(400, "No user deleted.")
         finally:
             apiQueryLock.release()
     
@@ -137,8 +193,33 @@ class Users(Resource):
         apiQueryLock.acquire()
         value = request.get_data()
         value = json.loads(value)
-        apiQueryLock.release()
-        return
+
+        # validate there is a field for email (str) name (str) (optional: recipes (list))
+        isInvalid = False
+        errorMsg = "Please fix the following values: "
+
+        if value["email"] == None or value["email"] == "" or type(value["email"]) != str:
+            isInvalid = True
+            errorMsg += "email (str) "
+        if value["name"] == None or value["name"] == "" or type(value["name"]) != str:
+            isInvalid = True
+            errorMsg += "name (str) "
+        if type(value["recipes"]) != list:
+            isInvalid = True
+            errorMsg += "recipes (list) "
+        errorMsg += "(optional: recipes (list))"
+
+        try:
+            if isInvalid:
+                raise Exception
+            queries.addUser(db, token, value["email"], value["name"], value["recipes"])
+            errorMsg = "No user added."
+            return True
+        except Exception as e:
+            print(e)
+            abort(400, errorMsg)
+        finally:
+            apiQueryLock.release()
 
 api.add_resource(Ingredients, '/RecipesPlusPlus/ingredients/', '/RecipesPlusPlus/ingredients/<int:id>/')
 api.add_resource(Recipes, '/RecipesPlusPlus/recipes/', '/RecipesPlusPlus/recipes/<int:id>/')

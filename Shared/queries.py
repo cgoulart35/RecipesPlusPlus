@@ -37,8 +37,13 @@ def removeIngredient(db, token, ingredientId):
     except:
         return
 
-#def setIngredient(db, token, ingredientId, value):
-    # push obj to list
+def addIngredient(db, token, name, image_url):
+    id = getNextIngredientId(db, token)
+    ingredient = {"id": id, "image_url": image_url, "name": name}
+    db.child("ingredients").push(ingredient)
+
+    # if ingredient doesn't exist throw an exception
+    getIngredient(db, token, id)
 
 def getAllRecipes(db, token):
     result = db.child("recipes").get(token)
@@ -78,8 +83,13 @@ def removeRecipe(db, token, recipeId):
     except:
         return
 
-#def setRecipe(db, token, recipeId, value):
-    # push obj to list
+def addRecipe(db, token, calories, image_url, ingredients, instructions, name, time):
+    id = getNextRecipeId(db, token)
+    recipe = {"calories": calories, "id": id, "image_url": image_url, "ingredients": ingredients, "instructions": instructions, "name": name, "time": time}
+    db.child("recipes").push(recipe)
+    
+    # if recipe doesn't exist throw an exception
+    getRecipe(db, token, id)
 
 def getAllUsers(db, token):
     result = db.child("users").get(token)
@@ -119,5 +129,10 @@ def removeUser(db, token, userId):
     except:
         return
 
-#def setUser(db, token, userId, value):
-    # push obj to list
+def addUser(db, token, email, name, recipes):
+    id = getNextUserId(db, token)
+    user = {"email": email, "id": id, "name": name, "recipes": recipes}
+    db.child("users").push(user)
+
+    # if user doesn't exist throw an exception
+    getUser(db, token, id)
