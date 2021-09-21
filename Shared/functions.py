@@ -10,3 +10,6 @@ def buildSharedConfig(parentDir):
 def buildFirebase(sharedConfig):
     firebaseConfig = json.loads(sharedConfig['shared']['firebaseConfigJson'])
     return pyrebase.initialize_app(firebaseConfig)
+
+def refreshToken(auth, user):
+    user = auth.refresh(user['refreshToken'])

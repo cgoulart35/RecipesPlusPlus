@@ -6,6 +6,7 @@ import importlib.util
 import pathlib
 import threading
 from configparser import ConfigParser
+from apscheduler.schedulers.background import BackgroundScheduler
 from flask import Flask, abort, request
 from flask_restful import Api, Resource
 #endregion
@@ -27,6 +28,10 @@ apiConfig = ConfigParser()
 apiConfig.read('RecipesPlusPlusApi/api.ini')
 sharedConfig = functions.buildSharedConfig(parentDir)
 
+# create and configure logger
+LOG_FORMAT = "%(levelname)s %(asctime)s - %(message)s"
+logging.basicConfig(filename = parentDir + '/RecipesPlusPlusApi.log', level = logging.INFO, format = LOG_FORMAT)
+
 # initialize firebase and database
 firebaseConfig = json.loads(sharedConfig['properties']['firebaseConfigJson'])
 firebase = pyrebase.initialize_app(firebaseConfig)
@@ -35,9 +40,10 @@ auth = firebase.auth()
 user = auth.sign_in_with_email_and_password(sharedConfig['properties']['firebaseAuthEmail'], sharedConfig['properties']['firebaseAuthPassword'])
 token = user['idToken']
 
-# create and configure logger
-LOG_FORMAT = "%(levelname)s %(asctime)s - %(message)s"
-logging.basicConfig(filename = parentDir + '/RecipesPlusPlusApi.log', level = logging.INFO, format = LOG_FORMAT)
+# create event scheduler for refreshing auth token
+sched = BackgroundScheduler(daemon=True)
+sched.add_job(lambda: functions.refreshToken(auth, user), 'interval', minutes = 30)
+sched.start()
 
 # Flask REST API
 app = Flask(__name__)
