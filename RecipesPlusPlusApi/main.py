@@ -227,4 +227,5 @@ class Users(Resource):
 api.add_resource(Ingredients, '/RecipesPlusPlus/ingredients/', '/RecipesPlusPlus/ingredients/<int:id>/')
 api.add_resource(Recipes, '/RecipesPlusPlus/recipes/', '/RecipesPlusPlus/recipes/<int:id>/')
 api.add_resource(Users, '/RecipesPlusPlus/users/', '/RecipesPlusPlus/users/<int:id>/')
+app.add_url_rule('/favicon.ico', view_func = lambda: functions.favicon(parentDir))
 app.run(host='0.0.0.0', port=5000)
