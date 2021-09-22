@@ -38,11 +38,14 @@ firebase = pyrebase.initialize_app(firebaseConfig)
 db = firebase.database()
 auth = firebase.auth()
 user = auth.sign_in_with_email_and_password(sharedConfig['properties']['firebaseAuthEmail'], sharedConfig['properties']['firebaseAuthPassword'])
-token = user['idToken']
 
 # create event scheduler for refreshing auth token
+def refreshToken():
+    global user
+    user = auth.refresh(user['refreshToken'])
+
 sched = BackgroundScheduler(daemon=True)
-sched.add_job(lambda: functions.refreshToken(auth, user), 'interval', minutes = 30)
+sched.add_job(refreshToken, 'interval', minutes = 1)
 sched.start()
 
 # Flask REST API
@@ -56,10 +59,10 @@ class Ingredients(Resource):
         try:
             if id == None:
                 # get all ingredients
-                return queries.getAllIngredients(db, token)
+                return queries.getAllIngredients(db, user['idToken'])
             else:
                 # get specific ingredient
-                return queries.getIngredient(db, token, id)               
+                return queries.getIngredient(db, user['idToken'], id)               
         except:
             abort(400, "No ingredient exists.")
         finally:
@@ -68,7 +71,7 @@ class Ingredients(Resource):
     def delete(self, id):
         apiQueryLock.acquire()
         try: 
-            queries.removeIngredient(db, token, id)
+            queries.removeIngredient(db, user['idToken'], id)
             return True
         except:
             abort(400, "No ingredient deleted.")
@@ -96,7 +99,7 @@ class Ingredients(Resource):
             if isInvalid:
                 raise Exception
             errorMsg = "No ingredient added."
-            queries.addIngredient(db, token, value["name"], value["image_url"])
+            queries.addIngredient(db, user['idToken'], value["name"], value["image_url"])
             return True
         except:
             abort(400, errorMsg)
@@ -109,10 +112,10 @@ class Recipes(Resource):
         try:
             if id == None:
                 # get all recipes
-                return queries.getAllRecipes(db, token)
+                return queries.getAllRecipes(db, user['idToken'])
             else:
                 # get specific recipe
-                return queries.getRecipe(db, token, id) 
+                return queries.getRecipe(db, user['idToken'], id) 
         except:
             abort(400, "No recipe exists.")
         finally:
@@ -121,7 +124,7 @@ class Recipes(Resource):
     def delete(self, id):
         apiQueryLock.acquire()
         try:
-            queries.removeRecipe(db, token, id)
+            queries.removeRecipe(db, user['idToken'], id)
             return True
         except:
             abort(400, "No recipe deleted.")
@@ -161,7 +164,7 @@ class Recipes(Resource):
             if isInvalid:
                 raise Exception
             errorMsg = "No recipe added."
-            queries.addRecipe(db, token, value["calories"], value["image_url"], value["ingredients"], value["instructions"], value["name"], value["time"])
+            queries.addRecipe(db, user['idToken'], value["calories"], value["image_url"], value["ingredients"], value["instructions"], value["name"], value["time"])
             return True
         except:
             abort(400, errorMsg)
@@ -174,10 +177,10 @@ class Users(Resource):
         try:
             if id == None:
                 # get all users
-                return queries.getAllUsers(db, token)
+                return queries.getAllUsers(db, user['idToken'])
             else:
                 # get specific user
-                return queries.getUser(db, token, id)            
+                return queries.getUser(db, user['idToken'], id)            
         except:
             abort(400, "No user exists.")
         finally:
@@ -186,7 +189,7 @@ class Users(Resource):
     def delete(self, id):
         apiQueryLock.acquire()
         try:
-            queries.removeUser(db, token, id)
+            queries.removeUser(db, user['idToken'], id)
             return True
         except:
             abort(400, "No user deleted.")
@@ -217,7 +220,7 @@ class Users(Resource):
             if isInvalid:
                 raise Exception
             errorMsg = "No user added."
-            queries.addUser(db, token, value["email"], value["name"], value["recipes"])
+            queries.addUser(db, user['idToken'], value["email"], value["name"], value["recipes"])
             return True
         except:
             abort(400, errorMsg)
