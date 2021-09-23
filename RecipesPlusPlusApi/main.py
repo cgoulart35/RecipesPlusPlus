@@ -45,7 +45,7 @@ def refreshToken():
     user = auth.refresh(user['refreshToken'])
 
 sched = BackgroundScheduler(daemon=True)
-sched.add_job(refreshToken, 'interval', minutes = 1)
+sched.add_job(refreshToken, 'interval', minutes = 30)
 sched.start()
 
 # Flask REST API
