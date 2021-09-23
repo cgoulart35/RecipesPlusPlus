@@ -81,25 +81,31 @@ class Ingredients(Resource):
     def post(self):
         apiQueryLock.acquire()
         value = request.get_data()
-        value = json.loads(value)
-
-        # validate there is a field for name (str) (optional: image_url (str))
-        isInvalid = False
-        errorMsg = "Please fix the following values: "
-
-        if value["name"] == None or value["name"] == "" or type(value["name"]) != str:
-            isInvalid = True
-            errorMsg += "name (str) "
-        if type(value["image_url"]) != str:
-            isInvalid = True
-            errorMsg += "image_url (str) "
-        errorMsg += "(optional: image_url (str))"
 
         try:
+            errorMsg = "Invalid JSON"
+            value = json.loads(value)
+
+            # validate there is a field for name (str) (optional: image_url (str))
+            isInvalid = False
+            errorMsg = "Please fix the following values: "
+
+            if "name" not in value or value["name"] == None or value["name"] == "" or type(value["name"]) != str:
+                isInvalid = True
+                errorMsg += "name (str) "
+            if "image_url" in value:
+                image_url = value["image_url"]
+                if type(image_url) != str:
+                    isInvalid = True
+                    errorMsg += "image_url (str) "
+            else:
+                image_url = ""
+            errorMsg += "(optional: image_url (str))"
+
             if isInvalid:
                 raise Exception
             errorMsg = "No ingredient added."
-            queries.addIngredient(db, user['idToken'], value["name"], value["image_url"])
+            queries.addIngredient(db, user['idToken'], value["name"], image_url)
             return True
         except:
             abort(400, errorMsg)
@@ -134,37 +140,70 @@ class Recipes(Resource):
     def post(self):
         apiQueryLock.acquire()
         value = request.get_data()
-        value = json.loads(value)
-
-        # validate there are fields for ingredients (list), instructions (list), name (str) (optional: calories (int) image_url (str) time (int))
-        isInvalid = False
-        errorMsg = "Please fix the following values: "
-
-        if value["ingredients"] == None or not value["ingredients"] or type(value["ingredients"]) != list:
-            isInvalid = True
-            errorMsg += "ingredients (list) "
-        if value["instructions"] == None or not value["instructions"] or type(value["instructions"]) != list:
-            isInvalid = True
-            errorMsg += "instructions (list) "
-        if value["name"] == None or value["name"] == "" or type(value["name"]) != str:
-            isInvalid = True
-            errorMsg += "name (str) "
-        if type(value["calories"]) != int:
-            isInvalid = True
-            errorMsg += "calories (int) "
-        if type(value["image_url"]) != str:
-            isInvalid = True
-            errorMsg += "image_url (str) "
-        if type(value["time"]) != int:
-            isInvalid = True
-            errorMsg += "time (int) "
-        errorMsg += "(optional: calories (int) image_url (str) time (int))"
 
         try:
+            errorMsg = "Invalid JSON"
+            value = json.loads(value)
+
+            # validate there are fields for ingredients (list), instructions (list), name (str) (optional: calories (int) image_url (str) time (int))
+            isInvalid = False
+            errorMsg = "Please fix the following values: "
+
+            if "ingredients" not in value or value["ingredients"] == None or not value["ingredients"] or type(value["ingredients"]) != list:
+                isInvalid = True
+                errorMsg += "ingredients (list) "
+            else:
+                # validate given ingredients exist
+                existingIngredients = queries.getAllIngredients(db, user['idToken'])
+                existingIngredientIds = [ingredient["id"] for ingredient in existingIngredients]
+                for ingredientId in value["ingredients"]:
+                    if type(ingredientId) != int:
+                        isInvalid = True
+                        errorMsg += "ingredients (list of int) "
+                        break
+                    if ingredientId not in existingIngredientIds:
+                        isInvalid = True
+                        errorMsg += "ingredients (ingredient ID not valid) "
+                        break
+            if "instructions" not in value or value["instructions"] == None or not value["instructions"] or type(value["instructions"]) != list:
+                isInvalid = True
+                errorMsg += "instructions (list) "
+            else:
+                for instruction in value["instructions"]:
+                    if type(instruction) != str:
+                        isInvalid = True
+                        errorMsg += "instructions (list of str) "
+                        break
+            if "name" not in value or value["name"] == None or value["name"] == "" or type(value["name"]) != str:
+                isInvalid = True
+                errorMsg += "name (str) "
+            if "calories" in value:
+                calories = value["calories"]
+                if type(calories) != int:
+                    isInvalid = True
+                    errorMsg += "calories (int) "
+            else:
+                calories = -1
+            if "image_url" in value:
+                image_url = value["image_url"]
+                if type(image_url) != str:
+                    isInvalid = True
+                    errorMsg += "image_url (str) "
+            else:
+                image_url = ""
+            if "time" in value:
+                time = value["time"]
+                if type(time) != int:
+                    isInvalid = True
+                    errorMsg += "time (int) "
+            else:
+                time = -1
+            errorMsg += "(optional: calories (int) image_url (str) time (int))"
+
             if isInvalid:
                 raise Exception
             errorMsg = "No recipe added."
-            queries.addRecipe(db, user['idToken'], value["calories"], value["image_url"], value["ingredients"], value["instructions"], value["name"], value["time"])
+            queries.addRecipe(db, user['idToken'], calories, image_url, value["ingredients"], value["instructions"], value["name"], time)
             return True
         except:
             abort(400, errorMsg)
@@ -199,28 +238,47 @@ class Users(Resource):
     def post(self):
         apiQueryLock.acquire()
         value = request.get_data()
-        value = json.loads(value)
-
-        # validate there is a field for email (str) name (str) (optional: recipes (list))
-        isInvalid = False
-        errorMsg = "Please fix the following values: "
-
-        if value["email"] == None or value["email"] == "" or type(value["email"]) != str:
-            isInvalid = True
-            errorMsg += "email (str) "
-        if value["name"] == None or value["name"] == "" or type(value["name"]) != str:
-            isInvalid = True
-            errorMsg += "name (str) "
-        if type(value["recipes"]) != list:
-            isInvalid = True
-            errorMsg += "recipes (list) "
-        errorMsg += "(optional: recipes (list))"
 
         try:
+            errorMsg = "Invalid JSON"
+            value = json.loads(value)
+
+            # validate there is a field for email (str) name (str) (optional: recipes (list))
+            isInvalid = False
+            errorMsg = "Please fix the following values: "
+
+            if "email" not in value or value["email"] == None or value["email"] == "" or type(value["email"]) != str:
+                isInvalid = True
+                errorMsg += "email (str) "
+            if "name" not in value or value["name"] == None or value["name"] == "" or type(value["name"]) != str:
+                isInvalid = True
+                errorMsg += "name (str) "
+            if "recipes" in value:
+                recipes = value["recipes"]
+                if type(recipes) != list:
+                    isInvalid = True
+                    errorMsg += "recipes (list) "
+                else:
+                    # validate given recipes exist
+                    existingRecipes = queries.getAllRecipes(db, user['idToken'])
+                    existingRecipeIds = [recipe["id"] for recipe in existingRecipes]
+                    for recipeId in recipes:
+                        if type(recipeId) != int:
+                            isInvalid = True
+                            errorMsg += "recipes (list of int) "
+                            break
+                        if recipeId not in existingRecipeIds:
+                            isInvalid = True
+                            errorMsg += "recipes (recipe ID not valid) "
+                            break
+            else:
+                recipes = []
+            errorMsg += "(optional: recipes (list))"
+
             if isInvalid:
                 raise Exception
             errorMsg = "No user added."
-            queries.addUser(db, user['idToken'], value["email"], value["name"], value["recipes"])
+            queries.addUser(db, user['idToken'], value["email"], value["name"], recipes)
             return True
         except:
             abort(400, errorMsg)
