@@ -151,21 +151,58 @@ class Recipes(Resource):
 
             if "ingredients" not in value or value["ingredients"] == None or not value["ingredients"] or type(value["ingredients"]) != list:
                 isInvalid = True
-                errorMsg += "ingredients (list) "
+                errorMsg += "ingredients (list of dict { ingredientId (int), unitId (int), quantity (int) }) "
             else:
-                # validate given ingredients exist
                 existingIngredients = queries.getAllIngredients(db, user['idToken'])
                 existingIngredientIds = [ingredient["id"] for ingredient in existingIngredients]
-                for ingredientId in value["ingredients"]:
-                    if type(ingredientId) != int:
+                existingUnits = queries.getAllUnits(db, user['idToken'])
+                existingUnitIds = [unit["id"] for unit in existingUnits]
+
+                for ingredient in value["ingredients"]:
+                    if type(ingredient) != dict:
                         isInvalid = True
-                        errorMsg += "ingredients (list of int) "
+                        errorMsg += "ingredients (list of dict { ingredientId (int), unitId (int), quantity (int) }) "
                         break
-                    if ingredientId not in existingIngredientIds:
-                        isInvalid = True
-                        errorMsg += "ingredients (ingredient ID not valid) "
-                        break
-            if "instructions" not in value or value["instructions"] == None or not value["instructions"] or type(value["instructions"]) != list:
+                    # validate list of objects each given an ingredientId, unitId, and quantity
+                    else:
+                        isInvalidIngredient = False
+                        isNonExistientIngredient = False
+                        isInvalidUnit = False
+                        isNonExistientUnit = False
+                        isInvalidQuantity = False
+
+                        if "ingredientId" not in ingredient or ingredient["ingredientId"] == None or type(ingredient["ingredientId"]) != int:
+                            isInvalid = True
+                            isInvalidIngredient = True
+                        # validate all given ingredients exist
+                        elif ingredient["ingredientId"] not in existingIngredientIds:
+                            isInvalid = True
+                            isNonExistientIngredient = True
+                        if "unitId" not in ingredient or ingredient["unitId"] == None or type(ingredient["unitId"]) != int:
+                            isInvalid = True
+                            isInvalidUnit = True
+                        # validate all given units exist
+                        elif ingredient["unitId"] not in existingUnitIds:
+                            isInvalid = True
+                            isNonExistientUnit = True
+                        if "quantity" not in ingredient or ingredient["quantity"] == None or type(ingredient["quantity"]) != int:
+                            isInvalid = True
+                            isInvalidQuantity = True
+                        if isInvalid:
+                            errorMsg += "ingredients (list of dict { "
+                            if isInvalidIngredient:
+                                errorMsg += "ingredientId (int) "
+                            elif isNonExistientIngredient:
+                                errorMsg += "ingredientId (ID not valid) "
+                            if isInvalidUnit:
+                                errorMsg += "unitId (int) "
+                            elif isNonExistientUnit:
+                                errorMsg += "unitId (ID not valid) "
+                            if isInvalidQuantity:
+                                errorMsg += "quantity (int) "
+                            errorMsg += "}) "
+                            break
+            if "instructions" not in value or value["instructions"] == None or type(value["instructions"]) != list:
                 isInvalid = True
                 errorMsg += "instructions (list) "
             else:
@@ -285,8 +322,20 @@ class Users(Resource):
         finally:
             apiQueryLock.release()
 
+class Units(Resource):
+    def get(self):
+        apiQueryLock.acquire()
+        try:
+            # get all units
+            return queries.getAllUnits(db, user['idToken'])            
+        except:
+            abort(400, "No unit exists.")
+        finally:
+            apiQueryLock.release()
+
 api.add_resource(Ingredients, '/RecipesPlusPlus/ingredients/', '/RecipesPlusPlus/ingredients/<int:id>/')
 api.add_resource(Recipes, '/RecipesPlusPlus/recipes/', '/RecipesPlusPlus/recipes/<int:id>/')
 api.add_resource(Users, '/RecipesPlusPlus/users/', '/RecipesPlusPlus/users/<int:id>/')
+api.add_resource(Units, '/RecipesPlusPlus/units/')
 app.add_url_rule('/favicon.ico', view_func = lambda: functions.favicon(parentDir))
 app.run(host='0.0.0.0', port=5000)

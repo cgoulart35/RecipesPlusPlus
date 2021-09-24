@@ -153,3 +153,13 @@ def addUser(db, token, email, name, recipes):
 
     # if user doesn't exist throw an exception
     getUser(db, token, id)
+
+def getAllUnits(db, token):
+    result = db.child("units").get(token)
+    if result.val() == None:
+        raise Exception
+    units = result.val()
+    if isinstance(units, dict):
+        return sorted(units.values(), key=lambda unit: unit["id"])
+    else:
+        return sorted(units, key=lambda unit: unit["id"])
