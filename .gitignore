@@ -1,5 +1,6 @@
 *.log
-Shared/__pycache__/functions.cpython-39.pyc
-Shared/__pycache__/queries.cpython-39.pyc
 Shared/serviceAccountKey.json
 Shared/shared.ini.pi
+Shared/__pycache__/functions.cpython-39.pyc
+Shared/__pycache__/queries.cpython-39.pyc
+RecipesPlusPlusWebApp/

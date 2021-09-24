@@ -50,6 +50,16 @@ def addIngredient(db, token, name, image_url):
     # if ingredient doesn't exist throw an exception
     getIngredient(db, token, id)
 
+def updateIngredient(db, token, ingredientId, name, image_url):
+    result = db.child("ingredients").order_by_child("id").equal_to(ingredientId).get(token)
+    if not result.val():
+        raise Exception
+
+    db.child("ingredients").child(result[0].key()).update({"image_url": image_url, "name": name})
+
+    # if ingredient doesn't exist throw an exception
+    getIngredient(db, token, ingredientId)
+
 def getAllRecipes(db, token):
     result = db.child("recipes").get(token)
     if result.val() == None:
@@ -102,6 +112,16 @@ def addRecipe(db, token, calories, image_url, ingredients, instructions, name, t
     # if recipe doesn't exist throw an exception
     getRecipe(db, token, id)
 
+def updateRecipe(db, token, recipeId, calories, image_url, ingredients, instructions, name, time):
+    result = db.child("recipes").order_by_child("id").equal_to(recipeId).get(token)
+    if not result.val():
+        raise Exception
+
+    db.child("recipes").child(result[0].key()).update({"calories": calories, "image_url": image_url, "ingredients": ingredients, "instructions": instructions, "name": name, "time": time})
+
+    # if recipe doesn't exist throw an exception
+    getRecipe(db, token, recipeId)
+
 def getAllUsers(db, token):
     result = db.child("users").get(token)
     if result.val() == None:
@@ -153,6 +173,16 @@ def addUser(db, token, email, name, recipes):
 
     # if user doesn't exist throw an exception
     getUser(db, token, id)
+
+def updateUser(db, token, userId, email, name, recipes):
+    result = db.child("users").order_by_child("id").equal_to(userId).get(token)
+    if not result.val():
+        raise Exception
+
+    db.child("users").child(result[0].key()).update({"email": email, "name": name, "recipes": recipes})
+
+    # if user doesn't exist throw an exception
+    getUser(db, token, userId)
 
 def getAllUnits(db, token):
     result = db.child("units").get(token)
