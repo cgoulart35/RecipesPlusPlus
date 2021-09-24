@@ -74,10 +74,16 @@ class Ingredients(Resource):
     def delete(self, id):
         apiQueryLock.acquire()
         try: 
+            errorMsg = "No ingredient deleted."
+
+            if queries.isIngredientBeingUsed(db, user['idToken'], id):
+                errorMsg = "Can't delete ingredient in use."
+                raise Exception
+
             queries.removeIngredient(db, user['idToken'], id)
             return True
         except:
-            abort(400, "No ingredient deleted.")
+            abort(400, errorMsg)
         finally:
             apiQueryLock.release()
 
@@ -167,10 +173,16 @@ class Recipes(Resource):
     def delete(self, id):
         apiQueryLock.acquire()
         try:
+            errorMsg = "No recipe deleted."
+
+            if queries.isRecipeBeingUsed(db, user['idToken'], id):
+                errorMsg = "Can't delete recipe in use."
+                raise Exception
+
             queries.removeRecipe(db, user['idToken'], id)
             return True
         except:
-            abort(400, "No recipe deleted.")
+            abort(400, errorMsg)
         finally:
             apiQueryLock.release()
     

@@ -60,6 +60,14 @@ def updateIngredient(db, token, ingredientId, name, image_url):
     # if ingredient doesn't exist throw an exception
     getIngredient(db, token, ingredientId)
 
+def isIngredientBeingUsed(db, token, ingredientId):
+    recipes = getAllRecipes(db, token)
+    for recipe in recipes:
+        ingredientIds = [ingredient["ingredientId"] for ingredient in recipe["ingredients"]]
+        if ingredientId in ingredientIds:
+            return True
+    return False
+
 def getAllRecipes(db, token):
     result = db.child("recipes").get(token)
     if result.val() == None:
@@ -121,6 +129,13 @@ def updateRecipe(db, token, recipeId, calories, image_url, ingredients, instruct
 
     # if recipe doesn't exist throw an exception
     getRecipe(db, token, recipeId)
+
+def isRecipeBeingUsed(db, token, recipeId):
+    users = getAllUsers(db, token)
+    for user in users:
+        if recipeId in user["recipes"]:
+            return True
+    return False
 
 def getAllUsers(db, token):
     result = db.child("users").get(token)
