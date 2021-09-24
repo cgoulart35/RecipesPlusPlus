@@ -163,3 +163,37 @@ def getAllUnits(db, token):
         return sorted(units.values(), key=lambda unit: unit["id"])
     else:
         return sorted(units, key=lambda unit: unit["id"])
+
+def getUnit(db, token, unitId):
+    result = db.child("units").order_by_child("id").equal_to(unitId).get(token)
+    if not result.val():
+        raise Exception
+    return result[0].val()
+
+def getUserGroceryList(db, token, userId):
+    groceryList = []
+    
+    user = getUser(db, token, userId)
+    recipeIds = user["recipes"]
+
+    for recipeId in recipeIds:
+        recipe = getRecipe(db, token, recipeId)
+        ingredientQuantities = recipe["ingredients"]
+
+        for ingredientQuantity in ingredientQuantities:
+            ingredient = getIngredient(db, token, ingredientQuantity["ingredientId"])
+            unit = getUnit(db, token, ingredientQuantity["unitId"])
+            quantity = ingredientQuantity["quantity"]
+            
+            ingredientAdded = False
+            for groceryItem in groceryList:
+                if groceryItem["ingredient"]["id"] == ingredient["id"] and groceryItem["unit"]["id"] == unit["id"]:
+                    groceryItem["quantity"] += quantity
+                    ingredientAdded = True
+                    break
+
+            if not ingredientAdded:
+                newGroceryItem = { "ingredient": ingredient, "unit": unit, "quantity": quantity }
+                groceryList.append(newGroceryItem)
+
+    return groceryList 

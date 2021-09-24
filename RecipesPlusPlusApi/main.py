@@ -323,19 +323,35 @@ class Users(Resource):
             apiQueryLock.release()
 
 class Units(Resource):
-    def get(self):
+    def get(self, id=None):
         apiQueryLock.acquire()
         try:
-            # get all units
-            return queries.getAllUnits(db, user['idToken'])            
+            if id == None:
+                # get all unit
+                return queries.getAllUnits(db, user['idToken'])
+            else:
+                # get specific unit
+                return queries.getUnit(db, user['idToken'], id)          
         except:
             abort(400, "No unit exists.")
+        finally:
+            apiQueryLock.release()
+
+class Grocery(Resource):
+    def get(self, id):
+        apiQueryLock.acquire()
+        try:
+            # get specific user's grocery list
+            return queries.getUserGroceryList(db, user['idToken'], id)            
+        except:
+            abort(400, "No user exists.")
         finally:
             apiQueryLock.release()
 
 api.add_resource(Ingredients, '/RecipesPlusPlus/ingredients/', '/RecipesPlusPlus/ingredients/<int:id>/')
 api.add_resource(Recipes, '/RecipesPlusPlus/recipes/', '/RecipesPlusPlus/recipes/<int:id>/')
 api.add_resource(Users, '/RecipesPlusPlus/users/', '/RecipesPlusPlus/users/<int:id>/')
-api.add_resource(Units, '/RecipesPlusPlus/units/')
+api.add_resource(Units, '/RecipesPlusPlus/units/', '/RecipesPlusPlus/units/<int:id>/')
+api.add_resource(Grocery, '/RecipesPlusPlus/users/<int:id>/grocery')
 app.add_url_rule('/favicon.ico', view_func = lambda: functions.favicon(parentDir))
 app.run(host='0.0.0.0', port=5000)
