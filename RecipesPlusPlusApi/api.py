@@ -5,6 +5,7 @@ import logging
 import importlib.util
 import pathlib
 import threading
+import os
 from configparser import ConfigParser
 from apscheduler.schedulers.background import BackgroundScheduler
 from flask import Flask, abort, request
@@ -29,8 +30,10 @@ apiConfig.read('RecipesPlusPlusApi/api.ini')
 sharedConfig = functions.buildSharedConfig(parentDir)
 
 # create and configure logger
+if not os.path.exists('Logs'):
+    os.mkdir('Logs')
 LOG_FORMAT = "%(levelname)s %(asctime)s - %(message)s"
-logging.basicConfig(filename = parentDir + '/RecipesPlusPlusApi.log', level = logging.INFO, format = LOG_FORMAT)
+logging.basicConfig(filename = parentDir + '/Logs/RecipesPlusPlusApi.log', level = logging.INFO, format = LOG_FORMAT)
 
 # initialize firebase and database
 firebaseConfig = json.loads(sharedConfig['properties']['firebaseConfigJson'])
