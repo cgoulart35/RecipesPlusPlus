@@ -181,20 +181,20 @@ def removeUser(db, token, userId):
     except:
         return
 
-def addUser(db, token, email, name, recipes):
+def addUser(db, token, email, items, name, recipes):
     id = getNextUserId(db, token)
-    user = {"email": email, "id": id, "name": name, "recipes": recipes}
+    user = {"email": email, "id": id, "items": items, "name": name, "recipes": recipes}
     db.child("users").push(user)
 
     # if user doesn't exist throw an exception
     getUser(db, token, id)
 
-def updateUser(db, token, userId, email, name, recipes):
+def updateUser(db, token, userId, email, items, name, recipes):
     result = db.child("users").order_by_child("id").equal_to(userId).get(token)
     if not result.val():
         raise Exception
 
-    db.child("users").child(result[0].key()).update({"email": email, "name": name, "recipes": recipes})
+    db.child("users").child(result[0].key()).update({"email": email, "items": items, "name": name, "recipes": recipes})
 
     # if user doesn't exist throw an exception
     getUser(db, token, userId)
@@ -217,10 +217,27 @@ def getUnit(db, token, unitId):
 
 def getUserGroceryList(db, token, userId):
     groceryList = []
-    
-    user = getUser(db, token, userId)
-    recipeIds = user["recipes"]
 
+    user = getUser(db, token, userId)
+
+    itemQuantities = user["items"]
+    for itemQuantity in itemQuantities:
+        ingredient = getIngredient(db, token, itemQuantity["ingredientId"])
+        unit = getUnit(db, token, itemQuantity["unitId"])
+        quantity = itemQuantity["quantity"]
+        
+        itemAdded = False
+        for groceryItem in groceryList:
+            if groceryItem["ingredient"]["id"] == ingredient["id"] and groceryItem["unit"]["id"] == unit["id"]:
+                groceryItem["quantity"] += quantity
+                itemAdded = True
+                break
+
+        if not itemAdded:
+            newGroceryItem = { "ingredient": ingredient, "unit": unit, "quantity": quantity }
+            groceryList.append(newGroceryItem)
+
+    recipeIds = user["recipes"]
     for recipeId in recipeIds:
         recipe = getRecipe(db, token, recipeId)
         ingredientQuantities = recipe["ingredients"]

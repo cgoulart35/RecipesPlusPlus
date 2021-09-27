@@ -439,13 +439,72 @@ class Users(Resource):
             errorMsg = "Invalid JSON"
             value = json.loads(value)
 
-            # validate there is a field for email (str) name (str) (optional: recipes (list))
+            # validate there is a field for email (str) name (str) (optional: items (list) recipes (list))
             isInvalid = False
             errorMsg = "Please fix the following values: "
 
             if "email" not in value or value["email"] == None or value["email"] == "" or type(value["email"]) != str:
                 isInvalid = True
                 errorMsg += "email (str) "
+            if "items" in value:
+                items = value["items"]
+
+                if type(items) != list:
+                    isInvalid = True
+                    errorMsg += "items (list) "
+                else:
+                    # validate given items exist
+                    existingIngredients = queries.getAllIngredients(db, user['idToken'])
+                    existingIngredientIds = [ingredient["id"] for ingredient in existingIngredients]
+                    existingUnits = queries.getAllUnits(db, user['idToken'])
+                    existingUnitIds = [unit["id"] for unit in existingUnits]
+
+                    for item in value["items"]:
+                        if type(item) != dict:
+                            isInvalid = True
+                            errorMsg += "items (list of dict { ingredientId (int), unitId (int), quantity (int) }) "
+                            break
+                        # validate list of objects each given an ingredientId, unitId, and quantity
+                        else:
+                            isInvalidIngredient = False
+                            isNonExistientIngredient = False
+                            isInvalidUnit = False
+                            isNonExistientUnit = False
+                            isInvalidQuantity = False
+
+                            if "ingredientId" not in item or item["ingredientId"] == None or type(item["ingredientId"]) != int:
+                                isInvalid = True
+                                isInvalidIngredient = True
+                            # validate all given ingredients exist
+                            elif item["ingredientId"] not in existingIngredientIds:
+                                isInvalid = True
+                                isNonExistientIngredient = True
+                            if "unitId" not in item or item["unitId"] == None or type(item["unitId"]) != int:
+                                isInvalid = True
+                                isInvalidUnit = True
+                            # validate all given units exist
+                            elif item["unitId"] not in existingUnitIds:
+                                isInvalid = True
+                                isNonExistientUnit = True
+                            if "quantity" not in item or item["quantity"] == None or type(item["quantity"]) != int:
+                                isInvalid = True
+                                isInvalidQuantity = True
+                            if isInvalid:
+                                errorMsg += "items (list of dict { "
+                                if isInvalidIngredient:
+                                    errorMsg += "ingredientId (int) "
+                                elif isNonExistientIngredient:
+                                    errorMsg += "ingredientId (ID not valid) "
+                                if isInvalidUnit:
+                                    errorMsg += "unitId (int) "
+                                elif isNonExistientUnit:
+                                    errorMsg += "unitId (ID not valid) "
+                                if isInvalidQuantity:
+                                    errorMsg += "quantity (int) "
+                                errorMsg += "}) "
+                                break
+            else:
+                items = []
             if "name" not in value or value["name"] == None or value["name"] == "" or type(value["name"]) != str:
                 isInvalid = True
                 errorMsg += "name (str) "
@@ -469,12 +528,12 @@ class Users(Resource):
                             break
             else:
                 recipes = []
-            errorMsg += "(optional: recipes (list))"
+            errorMsg += "(optional: items (list) recipes (list))"
 
             if isInvalid:
                 raise Exception
             errorMsg = "No user added."
-            queries.addUser(db, user['idToken'], value["email"], value["name"], recipes)
+            queries.addUser(db, user['idToken'], value["email"], items, value["name"], recipes)
             return True
         except:
             abort(400, errorMsg)
@@ -496,6 +555,65 @@ class Users(Resource):
             if "email" not in value or value["email"] == None or value["email"] == "" or type(value["email"]) != str:
                 isInvalid = True
                 errorMsg += "email (str) "
+            if "items" in value:
+                items = value["items"]
+
+                if type(items) != list:
+                    isInvalid = True
+                    errorMsg += "items (list) "
+                else:
+                    # validate given items exist
+                    existingIngredients = queries.getAllIngredients(db, user['idToken'])
+                    existingIngredientIds = [ingredient["id"] for ingredient in existingIngredients]
+                    existingUnits = queries.getAllUnits(db, user['idToken'])
+                    existingUnitIds = [unit["id"] for unit in existingUnits]
+
+                    for item in value["items"]:
+                        if type(item) != dict:
+                            isInvalid = True
+                            errorMsg += "items (list of dict { ingredientId (int), unitId (int), quantity (int) }) "
+                            break
+                        # validate list of objects each given an ingredientId, unitId, and quantity
+                        else:
+                            isInvalidIngredient = False
+                            isNonExistientIngredient = False
+                            isInvalidUnit = False
+                            isNonExistientUnit = False
+                            isInvalidQuantity = False
+
+                            if "ingredientId" not in item or item["ingredientId"] == None or type(item["ingredientId"]) != int:
+                                isInvalid = True
+                                isInvalidIngredient = True
+                            # validate all given ingredients exist
+                            elif item["ingredientId"] not in existingIngredientIds:
+                                isInvalid = True
+                                isNonExistientIngredient = True
+                            if "unitId" not in item or item["unitId"] == None or type(item["unitId"]) != int:
+                                isInvalid = True
+                                isInvalidUnit = True
+                            # validate all given units exist
+                            elif item["unitId"] not in existingUnitIds:
+                                isInvalid = True
+                                isNonExistientUnit = True
+                            if "quantity" not in item or item["quantity"] == None or type(item["quantity"]) != int:
+                                isInvalid = True
+                                isInvalidQuantity = True
+                            if isInvalid:
+                                errorMsg += "items (list of dict { "
+                                if isInvalidIngredient:
+                                    errorMsg += "ingredientId (int) "
+                                elif isNonExistientIngredient:
+                                    errorMsg += "ingredientId (ID not valid) "
+                                if isInvalidUnit:
+                                    errorMsg += "unitId (int) "
+                                elif isNonExistientUnit:
+                                    errorMsg += "unitId (ID not valid) "
+                                if isInvalidQuantity:
+                                    errorMsg += "quantity (int) "
+                                errorMsg += "}) "
+                                break
+            else:
+                items = []
             if "name" not in value or value["name"] == None or value["name"] == "" or type(value["name"]) != str:
                 isInvalid = True
                 errorMsg += "name (str) "
@@ -519,12 +637,12 @@ class Users(Resource):
                             break
             else:
                 recipes = []
-            errorMsg += "(optional: recipes (list))"
+            errorMsg += "(optional: items (list) recipes (list))"
 
             if isInvalid:
                 raise Exception
             errorMsg = "No user updated."
-            queries.updateUser(db, user['idToken'], id, value["email"], value["name"], recipes)
+            queries.updateUser(db, user['idToken'], id, value["email"], items, value["name"], recipes)
             return True
         except:
             abort(400, errorMsg)
