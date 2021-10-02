@@ -1,0 +1,119 @@
+@import url('https://fonts.googleapis.com/css?family=Roboto:700&display=swap');
+*{
+    padding: 0;
+    margin: 0;
+}
+.wrapper{
+    background: url(food.jpg);
+    background-size: cover;
+    background-repeat: no-repeat;
+    width: 100vw;
+    height: 100vh;
+    min-width: max-content;
+    min-height: max-content;
+    position: relative;
+}
+.logo{
+    width: 200px;
+    height: auto;
+    padding: 13px 50px;
+}
+.navbar{
+    height: 80px;
+    width: 100%;
+    background: rgba(0, 0, 0, 0.85);
+    max-width: 100%;    
+    min-width: 1200px;
+}
+.navbar ul{
+    float: right;
+    margin-right: 10px;
+}
+.navbar ul li{
+    list-style: none;
+    margin: 0px 10px;
+    display: inline-block;
+    line-height: 80px;
+}
+.navbar ul li a{
+    text-decoration: none;
+    font-size: 30px;
+    padding: 5px 10px;
+    font-family: 'Roboto', sans-serif;
+}
+.navbar ul li a.active,
+.navbar ul li a:hover{
+    text-decoration: underline;
+}
+.login{
+    position: absolute;
+    height: 300px;
+    width: 300px;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: rgba(0, 0, 0, 0.85);
+    border-radius: 25px;
+}
+.login h1{
+    position: absolute;
+    top: 17%;
+    left: 50%;
+    width: 300px;
+    transform: translate(-50%, -50%);
+    font-size: 30px;
+    font-family: 'Roboto', sans-serif;
+    color: rgba(255, 224, 49, 1);
+    text-align: center;
+}
+.login .forms{
+    position: absolute;
+    top: 60%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    text-align: center;
+}
+.login .button{
+    height: 30px;
+    width: 168px;
+    color: rgba(255, 224, 49, 1);
+    background: rgba(55, 103, 17, 1);
+    border-color: rgba(55, 103, 17, 1);
+}
+.home{
+    position: absolute;
+    height: 200px;
+    width: 400px;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: rgba(0, 0, 0, 0.85);
+    border-radius: 25px;
+}
+.home .title{
+    color: rgba(255, 224, 49, 1);
+}
+.home .name{
+    color: rgba(118, 167, 18, 1);
+}
+.home h1{
+    position: absolute;
+    top: 30%;
+    left: 50%;
+    width: 400px;
+    transform: translate(-50%, -50%);
+    font-size: 30px;
+    font-family: 'Roboto', sans-serif;
+    color: rgba(240, 117, 15, 1);
+    text-align: center;
+}
+.home h2{
+    position: absolute;
+    top: 80%;
+    left: 50%;
+    width: 400px;
+    transform: translate(-50%, -50%);
+    font-family: 'Roboto', sans-serif;
+    color: rgba(238, 36, 8, 1);
+    text-align: center;
+}

@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Recipes++</title>
+    <link rel="stylesheet" href="{{url_for('static', filename='style.css')}}">
+</head>
+<body>
+    <div class="wrapper">
+        <nav class="navbar">
+            <img class="logo" src="{{url_for('static', filename='logo.png')}}">
+            <ul>
+                <li><a class="{{home}}" href="{{url_for('views.home')}}" style="color: rgba(238, 36, 8, 1);">HOME</a></li>
+                <li><a class="{{ingredients}}" href="{{url_for('views.ingredients')}}" style="color: rgba(240, 117, 15, 1);">INGREDIENTS</a></li>
+                <li><a class="{{recipes}}" href="{{url_for('views.recipes')}}" style="color: rgba(255, 224, 49, 1);">RECIPES</a></li>
+                <li><a class="{{groceries}}" href="{{url_for('views.groceries')}}" style="color: rgba(118, 167, 18, 1);">GROCERIES</a></li>
+                <li><a class="{{profile}}" href="{{url_for('views.profile')}}" style="color: rgba(177, 173, 109, 1);">PROFILE</a></li>
+            </ul>
+        </nav>
+        {% block content %}
+        {% endblock %}
+    </div>
+</body>
+<script type="text/javascript" src="{{url_for('static', filename='index.js')}}"></script>
+</html>

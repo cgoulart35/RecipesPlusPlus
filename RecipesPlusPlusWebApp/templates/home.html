@@ -1,0 +1,9 @@
+{% extends "index.html" %}
+{% block content %}
+
+<div class="home" >
+    <h1>Hello, <span class="name">{{session["data"]["profile"]["name"]}}</span>! Welcome to <span class="title">Recipes++</span>!</h1>
+    <h2>by Christopher Goulart</h2>
+</div>
+
+{% endblock %}
