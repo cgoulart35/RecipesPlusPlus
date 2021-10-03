@@ -10,6 +10,7 @@ from configparser import ConfigParser
 from apscheduler.schedulers.background import BackgroundScheduler
 from flask import Flask, abort, request
 from flask_restful import Api, Resource
+from flask_cors import CORS
 #endregion
 
 # get parent directory and dependencies
@@ -53,6 +54,7 @@ sched.start()
 
 # Flask REST API
 app = Flask(__name__)
+cors = CORS(app, resources={r"*": {"origins": "*"}})
 api = Api(app)
 apiQueryLock = threading.Lock()
 
